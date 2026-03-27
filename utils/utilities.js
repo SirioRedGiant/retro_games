@@ -7,10 +7,10 @@
  */
 const getFullImageUrl = (req, imageName) => {
   if (!imageName) return null;
-  // 'req.protocol' rileva automaticamente se stai usando 'http' o 'https'.
+  // 'req.protocol' rileva automaticamente se si sta usando 'http' o 'https'
   // È fondamentale per far funzionare il link sia sul PC o online.
   const protocol = req.protocol;
-  // 'req.get("host")' recupera l'indirizzo del server (es. 'localhost:3000').
+  // 'req.get("host")' recupera l'indirizzo del server
   // Usiamo .get() perché l'host si trova negli "Headers" (intestazioni) della richiesta HTTP.
   const host = req.get("host");
 
