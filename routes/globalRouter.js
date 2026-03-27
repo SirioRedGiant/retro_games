@@ -3,7 +3,7 @@ const router = express.Router();
 
 // REGISTRO di tutte le risorse del sito
 router.get("/", (req, res) => {
-  res.json("Welcome to Movies-DB!");
+  res.json("Welcome to Start-db!");
 });
 
 // rotta test error 500

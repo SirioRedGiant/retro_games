@@ -6,60 +6,60 @@ const {
   validateMovie,
 } = require("../utils/utilities");
 
-//^ Index --> Lista film
+//^ Index --> Lista giochi
 const index = (req, res) => {
-  const movieSQL = `
-    SELECT movies.*, AVG(reviews.vote) AS vote_avg 
-    FROM movies
-    LEFT JOIN reviews ON movies.id = reviews.movie_id
-    GROUP BY movies.id
+  const gameSQL = `
+    SELECT games.*, AVG(reviews.vote) AS vote_avg 
+    FROM games
+    LEFT JOIN reviews ON games.id = reviews.game_id
+    GROUP BY games.id
   `;
-  connection.query(movieSQL, (err, results) => {
+  connection.query(gameSQL, (err, results) => {
     if (handleDbError(res, err)) return;
 
     // map  dei risultati per aggiungere l'URL completo alle immagini
-    const movies = results.map((movie) => ({
-      ...movie,
-      image: getFullImageUrl(req, movie.image),
+    const games = results.map((game) => ({
+      ...game,
+      image: getFullImageUrl(req, game.image),
     }));
-    res.json(movies);
+    res.json(games);
   });
 };
 
-//^ Show --> Singolo film + Recensioni
+//^ Show --> Singolo game + Recensioni
 const show = (req, res) => {
   const id = req.params.id;
 
-  // Query 1 --> Recupero il film
-  const movieSQL = "SELECT * FROM movies WHERE id = ?";
-  connection.query(movieSQL, [id], (err, movieResults) => {
+  // Query 1 --> Recupero il gioco
+  const gameSQL = "SELECT * FROM games WHERE id = ?";
+  connection.query(gameSQL, [id], (err, gameResults) => {
     if (handleDbError(res, err)) return;
-    if (movieResults.length === 0)
+    if (gameResults.length === 0)
       return res.status(404).json({
-        message: "Movie not found",
+        message: "game not found",
       });
 
-    const movie = movieResults[0];
+    const game = gameResults[0];
 
     // Path immagine (es. localhost:3000/img/inception.jpg)
-    movie.image = getFullImageUrl(req, movie.image);
+    game.image = getFullImageUrl(req, game.image);
 
-    // Query 2 --> Recupero delle recensioni collegate al film
-    const reviewsSql = "SELECT * FROM reviews WHERE movie_id = ?";
+    // Query 2 --> Recupero delle recensioni collegate al gioco
+    const reviewsSql = "SELECT * FROM reviews WHERE game_id = ?";
     connection.query(reviewsSql, [id], (err, reviewsResults) => {
       if (handleDbError(res, err)) return;
 
-      // l'array delle recensioni all'oggetto movie
-      movie.reviews = reviewsResults;
+      // l'array delle recensioni all'oggetto game
+      game.reviews = reviewsResults;
 
-      res.json(movie);
+      res.json(game);
     });
   });
 };
 
-//^ Store - Crea un nuovo film
+//^ Store - Crea un nuovo gioco
 const store = (req, res) => {
-  const validationError = validateMovie(req.body);
+  const validationError = validategame(req.body);
   if (validationError) {
     return res.status(400).json({
       success: false,
@@ -74,19 +74,19 @@ const store = (req, res) => {
   const image = req.file ? req.file.filename : "default.jpg";
 
   const sql = `
-    INSERT INTO movies (title, director, genre, release_year, abstract, image) 
+    INSERT INTO games (title, director, genre, release_year, abstract, image) 
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   connection.query(
     sql,
-    [title, director, genre, Number(release_year), abstract, image],   //? siccome dal form i dati arrivano come stringhe verifico che sia un numero
+    [title, director, genre, Number(release_year), abstract, image], //? siccome dal form i dati arrivano come stringhe verifico che sia un numero
     (err, results) => {
       if (handleDbError(res, err)) return;
 
-      // altrimenti --> stato 201 (Created) e l'ID del nuovo film
+      // altrimenti --> stato 201 (Created) e l'ID del nuovo gioco
       res.status(201).json({
-        message: "Movie created successfully",
+        message: "game created successfully",
         id: results.insertId, // --> per il redirect nel frontend
       });
     },
@@ -111,7 +111,7 @@ const store = (req, res) => {
 
 //^ StoreReview - Salva/Aggiunge una nuova recensione
 const storeReview = (req, res) => {
-  const { id } = req.params; // l'ID del film daell'URL --> movie_id perchè riguarda il film specifico
+  const { id } = req.params; // l'ID del gioco dall'URL --> game_id perchè riguarda il gioco specifico
 
   //note controllo dati ricevuti validateReview --> utility function se non li passa entra in validationError
   const validationError = validateReview(req.body);
@@ -126,7 +126,7 @@ const storeReview = (req, res) => {
 
   // Query SQL
   const storeReviewSql =
-    "INSERT INTO reviews (movie_id, name, vote, text) VALUES (?, ?, ?, ?)";
+    "INSERT INTO reviews (game_id, name, vote, text) VALUES (?, ?, ?, ?)";
 
   connection.query(storeReviewSql, [id, name, vote, text], (err, results) => {
     if (handleDbError(res, err)) return;
