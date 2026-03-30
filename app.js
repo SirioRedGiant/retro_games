@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
-const register = require("./routes/registerRouter");
-const login = require("./routes/loginRouter");
-const port = 3000;
-const user = require("./routes/userRouter");
+const products = require("./routes/productsRouter");
+// const register = require("./routes/registerRouter");
+// const login = require("./routes/loginRouter");
+// const user = require("./routes/userRouter");
 // MIDDLEWARES
 const cors = require("cors");
 const logger = require("./middlewares/logger");
@@ -20,26 +20,24 @@ app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 // app.use("/global", globalRouter);
 // app.use("/movies", movieRouter);
-app.get("/", (req, res) => {
-  res.json({
-    test: "test",
-  });
-});
+
+// PRODUCTS
+app.use("/products", products);
 
 // REGISTER
-app.use("/register", register);
+// app.use("/register", register);
 
 //LOGIN
-app.use("/login", login);
+// app.use("/login", login);
 
 //USER INFO
-app.use("/user", user);
+// app.use("/user", user);
 
 // ERRORS HANDLING
 app.use(errorMiddleware.error404);
 app.use(errorMiddleware.error500);
 // SERVER START
-app.listen(port, () => {
+app.listen(process.env.APP_PORT, () => {
   console.log("Server environment: " + process.env.APP_MODE); // per far sapere al server che è eseguito in DEV --> IL MIO ENVIRONMENT localhost for testing
   console.log(
     "Server listening on " + process.env.APP_URL + ":" + process.env.APP_PORT,
