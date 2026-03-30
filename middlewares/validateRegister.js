@@ -1,5 +1,5 @@
 function validate(req, res, next) {
-  const { username, password } = req.body;
+  const { username, password, email } = req.body;
   if (
     typeof username != "string" ||
     !username.trim() ||

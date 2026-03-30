@@ -3,6 +3,7 @@ const app = express();
 const register = require("./routes/registerRouter");
 const login = require("./routes/loginRouter");
 const port = 3000;
+const user = require("./routes/userRouter");
 // MIDDLEWARES
 const cors = require("cors");
 const logger = require("./middlewares/logger");
@@ -30,6 +31,9 @@ app.use("/register", register);
 
 //LOGIN
 app.use("/login", login);
+
+//USER INFO
+app.use("/user", user);
 
 // ERRORS HANDLING
 app.use(errorMiddleware.error404);

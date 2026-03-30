@@ -2,8 +2,13 @@ const bcrypt = require("bcrypt");
 const connect = require("../database/db");
 
 async function registerUser(req, res) {
-  const { username, password } = req.body;
-
+  const { username, password, email } = req.body;
+  if (typeof email != "string" || !email.trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Bad request",
+    });
+  }
   try {
     const sqlUser = "select * from users where username=?";
     const [existResult] = await connect.promise().query(sqlUser, [username]);
@@ -14,8 +19,8 @@ async function registerUser(req, res) {
       });
     }
     const hashedPasw = await bcrypt.hash(password, 10);
-    const sql = "insert into users (username,password) values(?,?)";
-    await connect.promise().query(sql, [username, hashedPasw]);
+    const sql = "insert into users (username,password,email) values(?,?,?)";
+    await connect.promise().query(sql, [username, hashedPasw, email]);
     res.json({
       success: true,
       message: "Register succesfully",
