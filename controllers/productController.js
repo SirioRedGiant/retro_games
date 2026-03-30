@@ -9,11 +9,11 @@ function index(req, res) {
         success: false,
         error: "Internal server error",
       });
-  });
 
-  res.json({
-    success: true,
-    message: "yep!",
+    res.json({
+      success: true,
+      message: resultsIndex,
+    });
   });
 }
 
@@ -30,13 +30,13 @@ async function show(req, res) {
   try {
     const sql = "select * from products where id=?";
 
-    // const [rows] = await connection.promise().query(sql, [id]);
-    // if (rows.lenght === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     error: "ID Not Found",
-    //   });
-    // }
+    const [rows] = await connection.promise().query(sql, [id]);
+    if (rows.lenght === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "ID Not Found",
+      });
+    }
 
     res.json({
       success: true,
