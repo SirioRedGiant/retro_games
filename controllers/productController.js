@@ -1,11 +1,50 @@
 const connection = require("../database/db");
 
-function index(req, res) {
-  const pathImage = (img) => {
-    const tmp = "http://localhost:3000/img/" + img;
-    return tmp;
-  };
+function mostFamous(req, res) {
+  const sql =
+    "select slug,name,image,price,discount_value from products limit 6";
 
+  connection.query(sql, (err, resultFamous) => {
+    if (err)
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
+
+    const updateResult = resultFamous.map((el) => {
+      return { ...el, image: pathImage(el.image) };
+    });
+
+    res.json({
+      success: true,
+      result: updateResult,
+    });
+  });
+}
+
+function recentlyUpdate(req, res) {
+  const sql =
+    "select slug,name,image,price,discount_value from products order by created_at limit 6";
+
+  connection.query(sql, (err, resultFamous) => {
+    if (err)
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
+
+    const updateResult = resultFamous.map((el) => {
+      return { ...el, image: pathImage(el.image) };
+    });
+
+    res.json({
+      success: true,
+      result: updateResult,
+    });
+  });
+}
+
+function index(req, res) {
   const sql = "select id,slug,name,image,price from products";
 
   connection.query(sql, (err, resultsIndex) => {
@@ -60,4 +99,9 @@ async function show(req, res) {
   }
 }
 
-module.exports = { index, show };
+function pathImage(img) {
+  const tmp = "http://localhost:3000/img/" + img;
+  return tmp;
+}
+
+module.exports = { index, show, mostFamous, recentlyUpdate };
