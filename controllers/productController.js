@@ -13,9 +13,13 @@ function index(req, res) {
       });
     }
 
+    const updateResult = resultsIndex.map((el) => {
+      return { ...el, image: pathImage(el.image) };
+    });
+
     res.json({
       success: true,
-      message: resultsIndex,
+      result: updateResult,
     });
   });
 }
@@ -43,7 +47,7 @@ async function show(req, res) {
 
     res.json({
       success: true,
-      message: "Oks",
+      message: rows[0],
     });
   } catch (err) {
     console.log(err);

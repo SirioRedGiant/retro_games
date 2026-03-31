@@ -1,9 +1,5 @@
 const express = require("express");
 const app = express();
-const products = require("./routes/productsRouter");
-// const register = require("./routes/registerRouter");
-// const login = require("./routes/loginRouter");
-// const user = require("./routes/userRouter");
 // MIDDLEWARES
 const cors = require("cors");
 const logger = require("./middlewares/logger");
@@ -15,10 +11,14 @@ app.use(express.json());
 app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 // DEFINIZIONE ROTTE
-// const globalRouter = require("./routes/globalRouter");
+const globalRouter = require("./routes/globalRouter");
+const products = require("./routes/productsRouter");
+// const register = require("./routes/registerRouter");
+// const login = require("./routes/loginRouter");
+// const user = require("./routes/userRouter");
 // const movieRouter = require("./routes/movieRouter");
 
-// app.use("/global", globalRouter);
+app.use("/", globalRouter);
 // app.use("/movies", movieRouter);
 
 // PRODUCTS
