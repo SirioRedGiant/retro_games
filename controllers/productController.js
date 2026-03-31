@@ -142,4 +142,4 @@ function pathImage(img) {
   return tmp;
 }
 
-module.exports = { index, show };
+module.exports = { index, show, mostFamous, recentlyUpdate };
