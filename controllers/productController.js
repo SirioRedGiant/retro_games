@@ -48,11 +48,14 @@ function index(req, res) {
   const sql = "select id,slug,name,image,price from products";
 
   connection.query(sql, (err, resultsIndex) => {
-    if (err)
+    if (err) {
+      console.log(err);
+
       return res.status(500).json({
         success: false,
         error: "Internal server error",
       });
+    }
 
     const updateResult = resultsIndex.map((el) => {
       return { ...el, image: pathImage(el.image) };

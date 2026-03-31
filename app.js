@@ -23,6 +23,11 @@ app.use("/", globalRouter);
 
 // PRODUCTS
 app.use("/products", products);
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+  });
+});
 
 // REGISTER
 // app.use("/register", register);

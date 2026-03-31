@@ -6,5 +6,4 @@ route.get("/", controller.index);
 route.get("/famous", controller.mostFamous);
 route.get("/recent", controller.recentlyUpdate);
 route.get("/:id", controller.show);
-
 module.exports = route;
