@@ -1,6 +1,11 @@
 const connection = require("../database/db");
 
 function index(req, res) {
+  const pathImage = (img) => {
+    const tmp = "http://localhost:3000/img/" + img;
+    return tmp;
+  };
+
   const sql = "select id,slug,name,image,price from products";
 
   connection.query(sql, (err, resultsIndex) => {
@@ -10,9 +15,13 @@ function index(req, res) {
         error: "Internal server error",
       });
 
+    const updateResult = resultsIndex.map((el) => {
+      return { ...el, image: pathImage(el.image) };
+    });
+
     res.json({
       success: true,
-      message: resultsIndex,
+      result: updateResult,
     });
   });
 }
@@ -40,7 +49,7 @@ async function show(req, res) {
 
     res.json({
       success: true,
-      message: "Oks",
+      message: rows[0],
     });
   } catch (err) {
     console.log(err);
