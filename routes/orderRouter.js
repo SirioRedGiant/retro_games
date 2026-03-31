@@ -2,6 +2,6 @@ const express = require("express");
 const route = express.Router();
 const controller = require("../controllers/orderController");
 
-route.get("/byname", controller.orderByName);
+route.get("/order", controller.orderBy);
 
 module.exports = route;

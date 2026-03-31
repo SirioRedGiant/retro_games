@@ -24,7 +24,7 @@ app.use("/", globalRouter);
 
 // PRODUCTS
 app.use("/products", products);
-app.use("/order", order);
+app.use("/search", order);
 app.get("/", (req, res) => {
   res.json({
     success: true,
