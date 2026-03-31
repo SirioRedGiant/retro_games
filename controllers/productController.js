@@ -69,29 +69,64 @@ function index(req, res) {
 }
 
 async function show(req, res) {
-  const { id } = req.params;
-
-  if (isNaN(id)) {
-    return res.status(400).json({
-      success: false,
-      error: "ID non valido",
-    });
-  }
+  const { slug } = req.params;
+  console.log(slug);
 
   try {
-    const sql = "select * from products where id=?";
+    const sql = `SELECT * FROM products WHERE slug = ?`;
 
-    const [rows] = await connection.promise().query(sql, [id]);
-    if (rows.lenght === 0) {
+    const [rows] = await connection.promise().query(sql, [slug]);
+    const product = rows[0];
+    console.log(product);
+
+    const productId = product.id;
+    // nelle 3 costanti qui sopra il codice --> cerca nella tabella products usando lo slug (es. super-mario-bros). Una volta trovato, salva l'ID del prodotto: questo ID è la "chiave" che verrà usata per aprire tutte le altre porte (generi, piattaforme e recensioni).
+
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: "ID Not Found",
+        error: "Product Not Found",
       });
     }
 
+    // i Generi --> con la tabella pivot genre_product
+    const [genres] = await connection.promise().query(
+      `SELECT genres.name
+       FROM genres 
+       JOIN genre_product ON genres.id = genre_product.genre_id 
+       WHERE genre_product.product_id = ?`,
+      [productId],
+    );
+
+    // le Piattaforme --> con la tabella pivot platform_product
+    const [platforms] = await connection.promise().query(
+      `SELECT platforms.name, platforms.company 
+       FROM platforms 
+       JOIN platform_product ON platforms.id = platform_product.platform_id 
+       WHERE platform_product.product_id = ?`,
+      [productId],
+    );
+
+    // le Recensioni --> da 1 a molti
+    const [reviews] = await connection
+      .promise()
+      .query("SELECT user_name, text, vote FROM reviews WHERE product_id = ?", [
+        productId,
+      ]);
+    console.log(genres, platforms, reviews);
+
+    // oggetto unico da restituire
+    const finalResult = {
+      ...product,
+      image: pathImage(product.image), // Sistema l'URL immagine
+      genres: genres.map((genere) => genere.name), // Trasforma in array di stringhe
+      platforms: platforms,
+      reviews: reviews,
+    };
+
     res.json({
       success: true,
-      message: rows[0],
+      result: finalResult,
     });
   } catch (err) {
     console.log(err);
@@ -107,4 +142,4 @@ function pathImage(img) {
   return tmp;
 }
 
-module.exports = { index, show, mostFamous, recentlyUpdate };
+module.exports = { index, show };
