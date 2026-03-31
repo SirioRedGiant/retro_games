@@ -13,6 +13,7 @@ app.use(cors({ origin: process.env.FRONTEND_URL }));
 // DEFINIZIONE ROTTE
 const globalRouter = require("./routes/globalRouter");
 const products = require("./routes/productsRouter");
+const ordersRouter = require("./routes/ordersRouter");
 const order = require("./routes/orderRouter");
 // const register = require("./routes/registerRouter");
 // const login = require("./routes/loginRouter");
@@ -24,6 +25,9 @@ app.use("/", globalRouter);
 
 // PRODUCTS
 app.use("/products", products);
+
+// ORDERS
+app.use("/shopping-cart", ordersRouter);
 app.use("/search", order);
 app.get("/", (req, res) => {
   res.json({
