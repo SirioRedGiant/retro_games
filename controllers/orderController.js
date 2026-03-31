@@ -3,10 +3,10 @@ const { pathImage } = require("../controllers/productController");
 function orderedBy(req, res) {
   const orderBy = req.query.by;
   // filtri disponibili
-  const searched = ["name", "price", "created_at", "discount_value"];
+  const searched = ["name", "price", "created_at", "discount_value", "all"];
 
   // se campo query non presente esco
-  if (orderBy != undefined && !searched.includes(orderBy)) {
+  if (orderBy === undefined && !searched.includes(orderBy)) {
     return res.status(400).json({
       success: false,
       error: "Bad request",
@@ -16,7 +16,7 @@ function orderedBy(req, res) {
   //se orderBy è undefined non è stato applicato il filtro di ricerca e mostro tutto
   //se invece presente ed è tra quelli disponibili ordino dinamicamente
   const sql =
-    orderBy === undefined
+    orderBy === "all"
       ? "select slug,name,image,price,discount_value from products"
       : `select slug,name,image,price,discount_value from products order by ${orderBy}`;
   connection.query(sql, (err, resultOrded) => {
