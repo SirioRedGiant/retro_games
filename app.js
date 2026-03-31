@@ -14,7 +14,6 @@ app.use(cors({ origin: process.env.FRONTEND_URL }));
 const globalRouter = require("./routes/globalRouter");
 const products = require("./routes/productsRouter");
 const ordersRouter = require("./routes/ordersRouter");
-const order = require("./routes/orderRouter");
 // const register = require("./routes/registerRouter");
 // const login = require("./routes/loginRouter");
 // const user = require("./routes/userRouter");
@@ -28,7 +27,7 @@ app.use("/products", products);
 
 // ORDERS
 app.use("/shopping-cart", ordersRouter);
-app.use("/search", order);
+app.use("/search", ordersRouter);
 app.get("/", (req, res) => {
   res.json({
     success: true,
