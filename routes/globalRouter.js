@@ -3,13 +3,7 @@ const router = express.Router();
 
 // REGISTRO di tutte le risorse del sito
 router.get("/", (req, res) => {
-  res.json("Welcome to Start-db!");
-});
-
-// rotta test error 500
-router.get("/test-error", (req, res) => {
-  a.b;
-  res.send("Hello world");
+  res.json({ message: "Welcome to Start-db!" });
 });
 
 module.exports = router;
