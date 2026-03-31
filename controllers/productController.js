@@ -1,14 +1,17 @@
 const connection = require("../database/db");
 
 function index(req, res) {
-  const sql = "select id,slug,name,image,price from products";
+  const sql = "select * from products";
 
   connection.query(sql, (err, resultsIndex) => {
-    if (err)
+    if (err) {
+      console.log(err);
+
       return res.status(500).json({
         success: false,
         error: "Internal server error",
       });
+    }
 
     res.json({
       success: true,
