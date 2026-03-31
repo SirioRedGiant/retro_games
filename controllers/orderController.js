@@ -1,6 +1,6 @@
 const connection = require("../database/db");
 const { pathImage } = require("../controllers/productController");
-function orderBy(req, res) {
+function orderedBy(req, res) {
   const orderBy = req.query.by;
   // filtri disponibili
   const searched = ["name", "price", "created_at", "discount_value"];
@@ -45,4 +45,4 @@ function orderBy(req, res) {
   });
 }
 
-module.exports = { orderBy };
+module.exports = { orderedBy };
