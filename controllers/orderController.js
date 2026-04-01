@@ -58,15 +58,14 @@ async function checkout(req, res) {
   }
 }
 
-
 const { pathImage } = require("../controllers/productController");
 function orderedBy(req, res) {
-  const orderBy = req.query.by;
+  const orderBy = req.query.by.toLowerCase();
   // filtri disponibili
   const searched = ["name", "price", "created_at", "discount_value", "all"];
 
   // se campo query non presente esco
-  if (orderBy === undefined && !searched.includes(orderBy)) {
+  if (orderBy === undefined || !searched.includes(orderBy)) {
     return res.status(400).json({
       success: false,
       error: "Bad request",
