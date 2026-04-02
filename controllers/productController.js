@@ -55,7 +55,7 @@ function index(req, res) {
       products.name, 
       products.image, 
       products.price, 
-      products.discount_value 
+      products.discount_value
     FROM products
 
     LEFT JOIN genre_product ON products.id = genre_product.product_id
