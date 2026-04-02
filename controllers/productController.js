@@ -45,7 +45,50 @@ function recentlyUpdate(req, res) {
 }
 
 function index(req, res) {
-  const sql = "select id,slug,name,image,price from products";
+  // i filtri da recuperare
+  const { genre, platform, company, discounted } = req.query;
+
+  let sql = `
+    SELECT DISTINCT 
+      products.id, 
+      products.slug, 
+      products.name, 
+      products.image, 
+      products.price, 
+      products.discount_value 
+    FROM products
+
+    LEFT JOIN genre_product ON products.id = genre_product.product_id
+
+    LEFT JOIN platform_product ON products.id = platform_product.product_id
+
+    LEFT JOIN platforms ON platform_product.platform_id = platforms.id
+    WHERE 1=1
+  `;
+  // WHERE 1=1 è una condizione sempre vera --> permette di poter accettare qualsiasi filtro venga scelto senza avere un ordine preciso. Quindi è possibile filtrare per qualsiasi filtro usando AND, senza doversi preoccupare di verificare quale filtro sarà il primo. (contorto da riscrivere maybe)
+
+  const queryParameters = [];
+
+  // Logica dei filtri --> in base a quello che arriva da frontend
+
+  if (genre) {
+    sql += ` AND genre_product.genre_id = ?`;
+    queryParameters.push(genre);
+  }
+
+  if (platform) {
+    sql += ` AND platform_product.platform_id = ?`;
+    queryParameters.push(platform);
+  }
+
+  if (company) {
+    sql += ` AND platforms.company = ?`;
+    queryParameters.push(company);
+  }
+
+  if (discounted === "true") {
+    sql += ` AND products.discount_value > 0`;
+  }
 
   connection.query(sql, (err, resultsIndex) => {
     if (err) {
@@ -57,10 +100,15 @@ function index(req, res) {
       });
     }
 
-    const updateResult = resultsIndex.map((el) => {
-      return { ...el, image: pathImage(el.image) };
+    // Formattazione dei risultati --> trasforma il nome del file immagine in un URL navigabile dal frontend
+    const updateResult = resultsIndex.map((product) => {
+      return {
+        ...product,
+        image: pathImage(product.image),
+      };
     });
 
+    // Invio della risposta JSON
     res.json({
       success: true,
       result: updateResult,
