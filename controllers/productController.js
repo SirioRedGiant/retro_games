@@ -44,76 +44,116 @@ function recentlyUpdate(req, res) {
   });
 }
 
-function index(req, res) {
-  // i filtri da recuperare
+async function index(req, res) {
+  // i filtri da recuperare dalla query string
   const { genre, platform, company, discounted } = req.query;
 
-  let sql = `
+  try {
+    let sql = `
     SELECT DISTINCT 
       products.id, 
       products.slug, 
       products.name, 
       products.image, 
       products.price, 
-      products.discount_value
+      products.discount_value,
+      products.studio_name,
+      AVG(reviews.vote) AS average_vote,
+      GROUP_CONCAT(DISTINCT genres.name) AS genres_list,
+      GROUP_CONCAT(DISTINCT platforms.name) AS platforms_list,
+      GROUP_CONCAT(DISTINCT platforms.company) AS companies_list
+
     FROM products
 
-    LEFT JOIN genre_product ON products.id = genre_product.product_id
-
-    LEFT JOIN platform_product ON products.id = platform_product.product_id
-
-    LEFT JOIN platforms ON platform_product.platform_id = platforms.id
-    WHERE 1=1
+    LEFT JOIN reviews ON products.id = reviews.product_id
+      LEFT JOIN genre_product ON products.id = genre_product.product_id
+      LEFT JOIN genres ON genre_product.genre_id = genres.id
+      LEFT JOIN platform_product ON products.id = platform_product.product_id
+      LEFT JOIN platforms ON platform_product.platform_id = platforms.id
+      WHERE 1=1
   `;
-  // WHERE 1=1 è una condizione sempre vera --> permette di poter accettare qualsiasi filtro venga scelto senza avere un ordine preciso. Quindi è possibile filtrare per qualsiasi filtro usando AND, senza doversi preoccupare di verificare quale filtro sarà il primo. (contorto da riscrivere maybe)
+    // WHERE 1=1 è una condizione sempre vera --> permette di poter accettare qualsiasi filtro venga scelto senza avere un ordine preciso. Quindi è possibile filtrare per qualsiasi filtro usando AND, senza doversi preoccupare di verificare quale filtro sarà il primo. (contorto da riscrivere maybe)
 
-  const queryParameters = [];
+    const queryParameters = [];
 
-  // Logica dei filtri --> in base a quello che arriva da frontend
+    // Logica dei filtri --> in base a quello che arriva da frontend
 
-  if (genre) {
-    sql += ` AND genre_product.genre_id = ?`;
-    queryParameters.push(genre);
-  }
-
-  if (platform) {
-    sql += ` AND platform_product.platform_id = ?`;
-    queryParameters.push(platform);
-  }
-
-  if (company) {
-    sql += ` AND platforms.company = ?`;
-    queryParameters.push(company);
-  }
-
-  if (discounted === "true") {
-    sql += ` AND products.discount_value > 0`;
-  }
-
-  connection.query(sql, (err, resultsIndex) => {
-    if (err) {
-      console.log(err);
-
-      return res.status(500).json({
-        success: false,
-        error: "Internal server error",
-      });
+    if (genre) {
+      sql += ` AND genre_product.genre_id = ?`;
+      queryParameters.push(genre);
     }
 
-    // Formattazione dei risultati --> trasforma il nome del file immagine in un URL navigabile dal frontend
-    const updateResult = resultsIndex.map((product) => {
+    if (platform) {
+      sql += ` AND platform_product.platform_id = ?`;
+      queryParameters.push(platform);
+    }
+
+    if (company) {
+      sql += ` AND platforms.company = ?`;
+      queryParameters.push(company);
+    }
+
+    if (discounted === "true") {
+      sql += ` AND products.discount_value > 0`;
+    }
+
+    // per poter usare AVG e GROUP_CONCAT --> raggruppo per id
+    sql += ` GROUP BY products.id`;
+
+    // query principale --> con Promise/await
+    const [productsResult] = await connection
+      .promise()
+      .query(sql, queryParameters);
+    // query di supporto per popolare le select del frontend (Opzionale ma utile)
+    const [allGenres] = await connection
+      .promise()
+      .query("SELECT * FROM genres");
+    const [allPlatforms] = await connection
+      .promise()
+      .query("SELECT * FROM platforms");
+
+    // Formattazione dei dati
+    const finalProducts = productsResult.map((product) => {
       return {
         ...product,
         image: pathImage(product.image),
+        // trasforma<ione delle stringhe(arrivate grazie a GROUP_CONCAT) es.--> "Platform,Adventure" separate da virgola in array reali --> ["Platform", "Adventure"]
+        genres: product.genres_list ? product.genres_list.split(",") : [],
+        platforms: product.platforms_list
+          ? product.platforms_list.split(",")
+          : [],
+        companies: product.companies_list
+          ? product.companies_list.split(",")
+          : [],
+        // arrotondamento del voto medio a 1 decimale
+        average_vote: product.average_vote
+          ? parseFloat(product.average_vote).toFixed(1)
+          : 0,
+        // pulizia dei campi temporanei usati per la query
+        genres_list: undefined,
+        platforms_list: undefined,
+        companies_list: undefined,
       };
     });
 
-    // Invio della risposta JSON
+    // Risposta finale
     res.json({
       success: true,
-      result: updateResult,
+      result: {
+        products: finalProducts,
+        availableFilters: {
+          genres: allGenres,
+          platforms: allPlatforms,
+        },
+      },
     });
-  });
+  } catch (err) {
+    console.error("Errore nel recupero dei prodotti:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
 }
 
 async function show(req, res) {
