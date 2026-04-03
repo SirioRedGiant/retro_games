@@ -46,7 +46,7 @@ function recentlyUpdate(req, res) {
 
 async function index(req, res) {
   // i filtri da recuperare dalla query string
-  const { genre, platform, company, discounted } = req.query;
+  const { genre, platform, company, discounted, order_by } = req.query;
 
   try {
     let sql = `
@@ -100,11 +100,30 @@ async function index(req, res) {
     // per poter usare AVG e GROUP_CONCAT --> raggruppo per id
     sql += ` GROUP BY products.id`;
 
+    // Logica di ordinamento con switch --> per evitare sql injection
+    switch (order_by) {
+      case "price_asc":
+        sql += ` ORDER BY products.price ASC`;
+        break;
+      case "price_desc":
+        sql += ` ORDER BY products.price DESC`;
+        break;
+      case "name_asc":
+        sql += ` ORDER BY products.name ASC`;
+        break;
+      case "name_desc":
+        sql += ` ORDER BY products.name DESC`;
+        break;
+      default:
+        // default --> se non specificato si ordina per i più recenti inseriti
+        sql += ` ORDER BY products.id DESC`;
+    }
+
     // query principale --> con Promise/await
     const [productsResult] = await connection
       .promise()
       .query(sql, queryParameters);
-    // query di supporto per popolare le select del frontend (Opzionale ma utile)
+    // query di supporto per popolare le select del frontend
     const [allGenres] = await connection
       .promise()
       .query("SELECT * FROM genres");
