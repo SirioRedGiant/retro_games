@@ -4,7 +4,7 @@ function sendCoupon(req, res) {
   const { code } = req.body;
 
   const sql =
-    "select *,DATE(start_date) as start,DATE(end_date) as end from coupons where code=?";
+    "select *,DATE(start_date) as start ,DATE(end_date) as end from coupons where code=?";
 
   connect.query(sql, [code], (err, resultQuery) => {
     if (err)
