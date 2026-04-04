@@ -29,6 +29,7 @@ function sendCoupon(req, res) {
           result: {
             valid: true,
             discount: resultQuery[0].discount,
+            coupon_id: resultQuery[0].id,
           },
         });
       } else {

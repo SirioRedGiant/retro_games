@@ -27,7 +27,7 @@ app.use("/", globalRouter);
 app.use("/products", products);
 
 // ORDERS
-app.use("/shopping-cart", ordersRouter);
+app.use("/checkout", ordersRouter);
 app.use("/search", ordersRouter);
 app.use("/coupon", couponRouter);
 app.get("/", (req, res) => {

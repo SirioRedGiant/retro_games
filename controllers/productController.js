@@ -177,14 +177,12 @@ async function index(req, res) {
 
 async function show(req, res) {
   const { slug } = req.params;
-  console.log(slug);
 
   try {
     const sql = `SELECT * FROM products WHERE slug = ?`;
 
     const [rows] = await connection.promise().query(sql, [slug]);
     const product = rows[0];
-    console.log(product);
 
     const productId = product.id;
     // nelle 3 costanti qui sopra il codice --> cerca nella tabella products usando lo slug (es. super-mario-bros). Una volta trovato, salva l'ID del prodotto: questo ID è la "chiave" che verrà usata per aprire tutte le altre porte (generi, piattaforme e recensioni).
