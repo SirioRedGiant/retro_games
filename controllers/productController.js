@@ -218,7 +218,6 @@ async function show(req, res) {
       .query("SELECT user_name, text, vote FROM reviews WHERE product_id = ?", [
         productId,
       ]);
-    console.log(genres, platforms, reviews);
 
     // oggetto unico da restituire
     const finalResult = {

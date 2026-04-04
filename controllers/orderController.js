@@ -37,12 +37,11 @@ async function checkout(req, res) {
     const orderID = orderResult.insertId;
 
     for (const item of loot) {
-      console.log(item);
       const sqlItem =
         "insert into order_product (product_id,order_id,price_at_purchase,quantity) value (?,?,?,?)";
       await connection
         .promise()
-        .query(sqlItem, [item.id, orderID, item.price, item.quantity]);
+        .query(sqlItem, [item.id, orderID, item.finalPrice, item.quantity]);
     }
 
     res.status(201).json({
