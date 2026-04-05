@@ -1,4 +1,16 @@
 const connection = require("../database/db");
+const nodemailer = require("nodemailer");
+
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
 async function checkout(req, res) {
   const {
@@ -44,6 +56,39 @@ async function checkout(req, res) {
         .query(sqlItem, [item.id, orderID, item.finalPrice, item.quantity]);
     }
 
+    const htmlContent = `<!doctype html>
+<html lang="it-IT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <header>
+      <section class="sec-head">
+        <div class="temp">
+          <h1>Ordine ricevuto con successo</h1>
+          <h2>Grazie per il tuo ordine ${user_name}</h2>
+      </section>
+    </header>
+    <main>
+      <section class="sec-main">
+        <div class="container">
+          <div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>`;
+
+    await transport.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user_email,
+      subject: "Conferma ordine",
+      html: htmlContent,
+    });
+
     res.status(201).json({
       success: true,
       result: {
@@ -52,6 +97,7 @@ async function checkout(req, res) {
       },
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       success: false,
       error: "Internal server error",
