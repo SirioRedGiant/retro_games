@@ -180,6 +180,12 @@ async function show(req, res) {
     const sql = `SELECT * FROM products WHERE slug = ?`;
 
     const [rows] = await connection.promise().query(sql, [slug]);
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Not found",
+      });
+    }
     const product = rows[0];
 
     const productId = product.id;
@@ -242,9 +248,7 @@ async function show(req, res) {
 //SEARCH ADVANCED
 function searchAdvanced(req, res) {
   const { genre, publisher, consolle, order } = req.body;
-
   const parametri = [];
-
   const ordinamento = ["price", "name", "created_at", "discount_value"];
 
   let sql =
@@ -254,17 +258,14 @@ function searchAdvanced(req, res) {
     sql += " and g.name=?";
     parametri.push(genre);
   }
-
   if (publisher) {
     sql += " and plat.company=?";
     parametri.push(publisher);
   }
-
   if (consolle) {
     sql += " and plat.name=?";
     parametri.push(consolle);
   }
-
   if (order != "all" && ordinamento.includes(order)) {
     sql += ` order by ${order}`;
   }
@@ -283,7 +284,6 @@ function searchAdvanced(req, res) {
     });
 
     if (order === "discount_value") {
-      console.log("qui");
       finProd = finProd.filter((el) => {
         return el.discount_value > 0;
       });

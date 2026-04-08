@@ -1,45 +1,46 @@
 const express = require("express");
-const axios = require("axios");
+const route = express.Router();
+const OpenAI = require("openai");
 
-const router = express.Router();
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-router.post("/chat", async (req, res) => {  
-  const { messages, system } = req.body;
-
-  if (!messages || !system) {
-    return res.status(400).json({ error: "Parametri mancanti." });
-  }
-
-  if (!process.env.ANTHROPIC_KEY) {
-    console.error("ANTHROPIC_KEY non trovata nel file .env");
-    return res.status(500).json({ error: "Chiave API mancante." });
-  }
-
+route.post("/", async (req, res) => {
   try {
-    const { data } = await axios.post(
-      "https://api.anthropic.com/v1/messages",
-      {
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 300,
-        system,
-        messages,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
+    const { system, messages } = req.body;
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages mancanti" });
+    }
+
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        {
+          role: "system",
+          content: system || "Sei un assistente utile.",
         },
-      }
-    );
+        ...messages,
+      ],
+    });
 
-    const reply = data?.content?.[0]?.text || "Nessuna risposta ricevuta.";
-    return res.json({ reply });
+    res.json({
+      reply: response.output[0].content[0].text,
+    });
+  } catch (error) {
+    console.error("OPENAI ERROR:", error);
 
-  } catch (err) {
-    console.error("Errore API Anthropic:", err?.response?.data || err.message);
-    return res.status(500).json({ error: "Errore nella chiamata all'AI." });
+    if (error.code === "insufficient_quota") {
+      return res.status(429).json({
+        error: "Credito API esaurito. Controlla il billing.",
+      });
+    }
+
+    res.status(500).json({
+      error: "Errore nella richiesta a OpenAI",
+    });
   }
 });
 
-module.exports = router;
+module.exports = route;
