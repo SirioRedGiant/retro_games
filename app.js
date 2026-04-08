@@ -15,6 +15,7 @@ const globalRouter = require("./routes/globalRouter");
 const products = require("./routes/productsRouter");
 const ordersRouter = require("./routes/ordersRouter");
 const couponRouter = require("./routes/couponRouter");
+const chatAiRouter = require("./routes/chatAiRouter.js");
 // const register = require("./routes/registerRouter");
 // const login = require("./routes/loginRouter");
 // const user = require("./routes/userRouter");
@@ -22,6 +23,7 @@ const couponRouter = require("./routes/couponRouter");
 
 app.use("/", globalRouter);
 // app.use("/movies", movieRouter);
+app.use("/chat", chatAiRouter);
 
 // PRODUCTS
 app.use("/products", products);
