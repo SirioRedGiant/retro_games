@@ -70,7 +70,7 @@ async function index(req, res) {
       LEFT JOIN genres ON genre_product.genre_id = genres.id
       LEFT JOIN platform_product ON products.id = platform_product.product_id
       LEFT JOIN platforms ON platform_product.platform_id = platforms.id
-      WHERE 1=1
+     WHERE 1=1
   `;
     // WHERE 1=1 è una condizione sempre vera --> permette di poter accettare qualsiasi filtro venga scelto senza avere un ordine preciso. Quindi è possibile filtrare per qualsiasi filtro usando AND, senza doversi preoccupare di verificare quale filtro sarà il primo. (contorto da riscrivere maybe)
 
@@ -120,9 +120,7 @@ async function index(req, res) {
     }
 
     // query principale --> con Promise/await
-    const [productsResult] = await connection
-      .promise()
-      .query(sql, queryParameters);
+    const [productsResult] = await connection.promise().query(sql);
     // query di supporto per popolare le select del frontend
     const [allGenres] = await connection
       .promise()
@@ -241,9 +239,73 @@ async function show(req, res) {
   }
 }
 
+//SEARCH ADVANCED
+function searchAdvanced(req, res) {
+  const { genre, publisher, consolle, order } = req.body;
+
+  const parametri = [];
+
+  const ordinamento = ["price", "name", "created_at", "discount_value"];
+
+  let sql =
+    "select p.created_at,p.slug,p.name,p.image,p.price,p.discount_value,p.studio_name,g.name as genre_name,plat.name as platforms_list,plat.company as companies_list from products as p inner join genre_product as gp on p.id=gp.product_id inner join genres as g on g.id=gp.genre_id inner join platform_product as pp on p.id=pp.product_id inner join platforms as plat on plat.id=pp.platform_id where 1=1";
+
+  if (genre) {
+    sql += " and g.name=?";
+    parametri.push(genre);
+  }
+
+  if (publisher) {
+    sql += " and plat.company=?";
+    parametri.push(publisher);
+  }
+
+  if (consolle) {
+    sql += " and plat.name=?";
+    parametri.push(consolle);
+  }
+
+  if (order != "all" && ordinamento.includes(order)) {
+    sql += ` order by ${order}`;
+  }
+
+  connection.query(sql, parametri, (err, resultQuery) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
+    }
+
+    let finProd = resultQuery.map((el) => {
+      return { ...el, image: pathImage(el.image) };
+    });
+
+    if (order === "discount_value") {
+      console.log("qui");
+      finProd = finProd.filter((el) => {
+        return el.discount_value > 0;
+      });
+    }
+
+    res.json({
+      success: true,
+      products: finProd,
+    });
+  });
+}
+
 function pathImage(img) {
   const tmp = "http://localhost:3000/img/" + img;
   return tmp;
 }
 
-module.exports = { index, show, mostFamous, recentlyUpdate, pathImage };
+module.exports = {
+  index,
+  show,
+  mostFamous,
+  recentlyUpdate,
+  pathImage,
+  searchAdvanced,
+};
