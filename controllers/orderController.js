@@ -47,7 +47,6 @@ async function checkout(req, res) {
       ]);
 
     const orderID = orderResult.insertId;
-
     for (const item of loot) {
       const sqlItem =
         "insert into order_product (product_id,order_id,price_at_purchase,quantity) value (?,?,?,?)";
@@ -55,30 +54,98 @@ async function checkout(req, res) {
         .promise()
         .query(sqlItem, [item.id, orderID, item.finalPrice, item.quantity]);
     }
+    const tmpsql = "select order_date from orders where id=?";
+    const [timestamp] = await connection.promise().query(tmpsql, [orderID]);
+    const { order_date } = timestamp[0];
+    console.log(order_date);
 
     const htmlContent = `<!doctype html>
 <html lang="it-IT">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World!</title>
+    <title>Conferma Ordine</title>
   </head>
-  <body>
-    <header>
-      <section class="sec-head">
-        <div class="temp">
-          <h1>Ordine ricevuto con successo</h1>
-          <h2>Grazie per il tuo ordine ${user_name}</h2>
-      </section>
-    </header>
-    <main>
-      <section class="sec-main">
-        <div class="container">
-          <div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f6f8;">
+    
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px 0;">
+      <tr>
+        <td align="center">
+          
+          <!-- Container -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            
+            <!-- Header -->
+            <tr>
+              <td style="background:linear-gradient((90deg,#55bc47,#8cff00)); color:#ffffff; text-align:center; padding:20px;">
+                <h1 style="margin:0;">Press Start</h1>
+                <p style="margin:5px 0 0 0; font-size:16px;">Ordine effettuato con successo!</p>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding:20px;">
+                
+                <!-- Info -->
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="vertical-align:top; padding-right:20px;">
+                      <h3 style="margin-bottom:10px; color:#333;">Indirizzo di spedizione</h3>
+                      <p style="margin:4px 0;"><strong>Paese:</strong> ${shipping_country}</p>
+                      <p style="margin:4px 0;"><strong>Città:</strong> ${shipping_city}</p>
+                      <p style="margin:4px 0;"><strong>Indirizzo:</strong> ${shipping_address}</p>
+                      <p style="margin:4px 0;"><strong>CAP:</strong> ${shipping_postal_code}</p>
+                    </td>
+                    <td style="vertical-align:top; text-align:right;">
+                      <h3 style="margin-bottom:10px; color:#333;">Data ordine</h3>
+                      <p style="margin:4px 0;">${order_date}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <hr style="border:none; border-top:1px solid #e0e0e0; margin:20px 0;" />
+
+                <h3 style="color:#333;">Riepilogo ordine</h3>
+                <div>
+                  ${loot
+                    .map(
+                      (el) => `
+                      <div style="background:#fafafa; border:1px solid #eee; border-radius:6px; padding:10px; margin-bottom:10px;">
+                        <p style="margin:4px 0;">
+                          <strong>Prodotto:</strong> ${el.name} x ${el.quantity}
+                        </p>
+                        <p style="margin:4px 0;">
+                          <strong>Prezzo unitario:</strong> ${el.finalPrice} &euro;
+                        </p>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+                </div>
+
+                <!-- Total -->
+                <div style="margin-top:20px; padding-top:10px; border-top:2px solid #e0e0e0; text-align:right;">
+                  <span style="font-size:18px; font-weight:bold; color:#333;">
+                    Totale: ${total_price} &euro;
+                  </span>
+                </div>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f9f9f9; text-align:center; padding:15px; font-size:12px; color:#777;">
+                Grazie per il tuo acquisto! Se hai domande, rispondi a questa email.
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+
   </body>
 </html>`;
 
