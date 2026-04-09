@@ -1,46 +1,45 @@
 const express = require("express");
+const axios = require("axios");
 const route = express.Router();
-// const OpenAI = require("openai");
 
-// const client = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
+route.post("/", async (req, res) => {
+  const { system, messages } = req.body;
 
-// route.post("/", async (req, res) => {
-//   try {
-//     const { system, messages } = req.body;
+  if (!system || !Array.isArray(messages)) {
+    return res.status(400).json({
+      error: "Body non valido. Servono system e messages[]",
+    });
+  }
 
-//     if (!messages || !Array.isArray(messages)) {
-//       return res.status(400).json({ error: "messages mancanti" });
-//     }
+  try {
+    const response = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "system", content: system }, ...messages],
+        temperature: 0.5,
+        max_completion_tokens: 300,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
 
-//     const response = await client.responses.create({
-//       model: "gpt-4.1-mini",
-//       input: [
-//         {
-//           role: "system",
-//           content: system || "Sei un assistente utile.",
-//         },
-//         ...messages,
-//       ],
-//     });
+    const reply =
+      response.data?.choices?.[0]?.message?.content ||
+      "Non ho una risposta al momento.";
 
-//     res.json({
-//       reply: response.output[0].content[0].text,
-//     });
-//   } catch (error) {
-//     console.error("OPENAI ERROR:", error);
-
-//     if (error.code === "insufficient_quota") {
-//       return res.status(429).json({
-//         error: "Credito API esaurito. Controlla il billing.",
-//       });
-//     }
-
-//     res.status(500).json({
-//       error: "Errore nella richiesta a OpenAI",
-//     });
-//   }
-// });
+    return res.json({ reply });
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    return res.status(500).json({
+      error: "Errore nella chiamata Groq",
+      details: error.response?.data || error.message,
+    });
+  }
+});
 
 module.exports = route;
