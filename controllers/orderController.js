@@ -77,7 +77,7 @@ async function checkout(req, res) {
             
             <!-- Header -->
             <tr>
-              <td style="background:linear-gradient((90deg,#55bc47,#8cff00)); color:#ffffff; text-align:center; padding:20px;">
+              <td style="background:linear-gradient(90deg,#55bc47,#8cff00); color:#ffffff; text-align:center; padding:20px;">
                 <h1 style="margin:0;">Press Start</h1>
                 <p style="margin:5px 0 0 0; font-size:16px;">Ordine effettuato con successo!</p>
               </td>
