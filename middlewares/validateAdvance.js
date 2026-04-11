@@ -22,7 +22,7 @@ const frasiRetroGaming = [
 ];
 
 function validate(req, res, next) {
-  const { genre, publisher, consolle, order } = req.body;
+  const { genre, publisher, consolle, order, search } = req.body;
 
   if (
     (typeof genre != "string" && typeof genre != undefined) ||
@@ -36,7 +36,7 @@ function validate(req, res, next) {
     });
   }
 
-  if (!genre && !publisher && !consolle && !order) {
+  if (!genre && !publisher && !consolle && !order && !search) {
     const rnd = Math.floor(Math.random() * frasiRetroGaming.length);
     return res.json({
       success: true,
