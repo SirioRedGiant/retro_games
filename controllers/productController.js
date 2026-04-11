@@ -247,12 +247,12 @@ async function show(req, res) {
 
 //SEARCH ADVANCED
 function searchAdvanced(req, res) {
-  const { genre, publisher, consolle, order } = req.body;
+  const { genre, publisher, consolle, order, search } = req.body;
   const parametri = [];
   const ordinamento = ["price", "name", "created_at", "discount_value"];
 
   let sql =
-    "select p.created_at,p.slug,p.name,p.image,p.price,p.discount_value,p.studio_name,g.name as genre_name,plat.name as platforms_list,plat.company as companies_list from products as p inner join genre_product as gp on p.id=gp.product_id inner join genres as g on g.id=gp.genre_id inner join platform_product as pp on p.id=pp.product_id inner join platforms as plat on plat.id=pp.platform_id where 1=1";
+    "select p.created_at,p.slug,p.description,p.name,p.image,p.price,p.discount_value,p.studio_name,g.name as genre_name,plat.name as platforms_list,plat.company as companies_list from products as p inner join genre_product as gp on p.id=gp.product_id inner join genres as g on g.id=gp.genre_id inner join platform_product as pp on p.id=pp.product_id inner join platforms as plat on plat.id=pp.platform_id where 1=1";
 
   if (genre) {
     sql += " and g.name=?";
@@ -266,6 +266,12 @@ function searchAdvanced(req, res) {
     sql += " and plat.name=?";
     parametri.push(consolle);
   }
+
+  if (search) {
+    sql += " and p.name like ?";
+    parametri.push(`%${search}%`);
+  }
+
   if (order != "all" && ordinamento.includes(order)) {
     sql += ` order by ${order}`;
   }
