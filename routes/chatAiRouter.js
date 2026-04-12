@@ -17,8 +17,8 @@ route.post("/", async (req, res) => {
       {
         model: "llama-3.1-8b-instant",
         messages: [{ role: "system", content: system }, ...messages],
-        temperature: 0.5,
-        max_completion_tokens: 300,
+        temperature: 0.7,
+        max_completion_tokens: 800,
       },
       {
         headers: {
